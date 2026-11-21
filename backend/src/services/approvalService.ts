@@ -164,6 +164,9 @@ export async function decideBatch(
   let result;
   try {
     result = await prisma.$transaction(async (tx) => {
+      // Serialize concurrent district votes so quorum counts stay correct
+      await tx.$executeRaw`SELECT id FROM "Batch" WHERE id = ${batchId} FOR UPDATE`;
+
       const batch = await tx.batch.findFirst({
         where: {
           id: batchId,
