@@ -8,17 +8,10 @@ import {
 } from "@/api/batches";
 import { ApiError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
+import { PageHeader } from "@/components/PageHeader";
 import { WorkflowStepper } from "@/components/WorkflowStepper";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -93,91 +86,77 @@ export function CentreHomePage() {
   const approved = batches.filter((b) => b.status === "APPROVED").length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">Centre workspace</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="space-y-8">
+      <PageHeader
+        title="Centre workspace"
+        description={
+          <>
             {user?.name} · upload passed candidates, fix row errors, submit for
             district review.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className="size-3.5" />
-            Refresh
-          </Button>
-          <Button size="sm" onClick={() => void onCreate()} disabled={creating}>
-            <Plus className="size-3.5" />
-            New batch
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
+              <RefreshCw className="size-3.5" />
+              Refresh
+            </Button>
+            <Button size="sm" onClick={() => void onCreate()} disabled={creating}>
+              <Plus className="size-3.5" />
+              New batch
+            </Button>
+          </>
+        }
+      />
 
       <WorkflowStepper activeIndex={0} />
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription>Editable</CardDescription>
-            <CardTitle className="text-3xl">{loading ? "—" : drafts}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription>In review</CardDescription>
-            <CardTitle className="text-3xl">{loading ? "—" : inReview}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <CardDescription>Approved</CardDescription>
-            <CardTitle className="text-3xl">{loading ? "—" : approved}</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="grid gap-6 border-b border-border/60 pb-6 sm:grid-cols-3">
+        <Metric label="Editable" value={loading ? "—" : String(drafts)} />
+        <Metric label="In review" value={loading ? "—" : String(inReview)} />
+        <Metric label="Approved" value={loading ? "—" : String(approved)} />
       </div>
 
-      <Alert className="border-primary/20 bg-accent/30">
-        <FileSpreadsheet className="size-4" />
-        <AlertTitle>Spreadsheet format</AlertTitle>
-        <AlertDescription>
+      <div className="flex gap-3 rounded-2xl border border-primary/15 bg-accent/40 px-4 py-3 text-sm text-muted-foreground">
+        <FileSpreadsheet className="mt-0.5 size-4 shrink-0 text-primary" />
+        <p>
           CSV or Excel: <code className="text-xs">fullName</code>,{" "}
           <code className="text-xs">phone</code>,{" "}
           <code className="text-xs">courseName</code>, optional{" "}
           <code className="text-xs">nationalId</code>. Bad rows block the whole
-          upload — use <strong>Explain with Gemini</strong> on the batch page for
-          fix tips.
-        </AlertDescription>
-      </Alert>
+          upload.
+        </p>
+      </div>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Your batches</CardTitle>
-          <CardDescription>
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="font-heading text-lg font-semibold">Your batches</h2>
+          <p className="text-sm text-muted-foreground">
             {loading ? "Loading…" : `${batches.length} batch(es)`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-2/3" />
-            </div>
-          ) : batches.length === 0 ? (
-            <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10">
-              <p className="text-sm text-muted-foreground">
-                No batches yet. Create a draft, upload candidates, then submit.
-              </p>
-              <Button onClick={() => void onCreate()} disabled={creating}>
-                <Plus className="size-3.5" />
-                Create first batch
-              </Button>
-            </div>
-          ) : (
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-2/3 rounded-xl" />
+          </div>
+        ) : batches.length === 0 ? (
+          <div className="flex flex-col items-start gap-4 rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 py-12">
+            <p className="max-w-md text-sm text-muted-foreground">
+              No batches yet. Create a draft, upload candidates, then submit.
+            </p>
+            <Button onClick={() => void onCreate()} disabled={creating}>
+              <Plus className="size-3.5" />
+              Create first batch
+            </Button>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/60">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableHead>Reference</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Candidates</TableHead>
@@ -191,9 +170,11 @@ export function CentreHomePage() {
                     <TableCell>
                       <Badge variant={statusVariant(b.status)}>{b.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">{b.candidateCount}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {b.candidateCount}
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="link" className="h-auto p-0" asChild>
+                      <Button size="sm" variant="secondary" asChild>
                         <Link to={`/centre/batches/${b.id}`}>Open</Link>
                       </Button>
                     </TableCell>
@@ -201,9 +182,18 @@ export function CentreHomePage() {
                 ))}
               </TableBody>
             </Table>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="font-heading mt-1 text-3xl font-semibold tabular-nums">{value}</p>
     </div>
   );
 }

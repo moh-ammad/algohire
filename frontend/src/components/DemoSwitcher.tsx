@@ -20,12 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChevronDown, Users } from "lucide-react";
 
 function initials(name: string) {
   return name
@@ -36,15 +32,20 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+const ROLE_TONE: Record<string, string> = {
+  CENTRE: "bg-sky-500/15 text-sky-900",
+  DISTRICT: "bg-amber-500/15 text-amber-950",
+  QUALITY: "bg-teal-500/15 text-teal-950",
+  STATE: "bg-emerald-500/15 text-emerald-950",
+};
+
 export function DemoSwitcher() {
   const { user, switching, loginAs, logout } = useAuth();
 
   async function switchTo(email: string, name: string) {
     try {
       await loginAs(email);
-      toast.success(`Signed in as ${name}`, {
-        description: "Role-based navigation updated.",
-      });
+      toast.success(`Signed in as ${name}`);
     } catch {
       toast.error("Could not switch user", {
         description: "Is the API running on :3000?",
@@ -53,30 +54,22 @@ export function DemoSwitcher() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex items-center gap-1.5">
       <Dialog>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Users className="size-3.5" />
-                Demo users
-              </Button>
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Switch reviewer personas instantly</TooltipContent>
-        </Tooltip>
-
-        <DialogContent className="sm:max-w-md">
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5 border-border/80 bg-background/80">
+            <Users className="size-3.5" />
+            <span className="hidden sm:inline">Demo users</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Demo personas</DialogTitle>
+            <DialogTitle className="font-heading">Who are you reviewing as?</DialogTitle>
             <DialogDescription>
-              Hackathon reviewers: one click switches JWT + role. Password is
-              shared seed (`password123`).
+              One-click JWT login. Walk Anika → Dev → Meera → Farah for the happy path.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="grid gap-2 py-2">
+          <div className="grid gap-2 py-1 sm:grid-cols-2">
             {DEMO_USERS.map((demo) => {
               const active = user?.email === demo.email;
               return (
@@ -85,26 +78,24 @@ export function DemoSwitcher() {
                   type="button"
                   disabled={switching}
                   onClick={() => void switchTo(demo.email, demo.name)}
-                  className={[
-                    "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors",
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all duration-200",
                     active
-                      ? "border-primary bg-accent"
-                      : "border-border hover:bg-muted/60",
-                    switching ? "opacity-60" : "",
-                  ].join(" ")}
+                      ? "border-primary bg-accent shadow-sm"
+                      : "border-border/80 hover:border-primary/40 hover:bg-muted/40",
+                    switching && "opacity-60",
+                  )}
                 >
                   <Avatar size="sm">
                     <AvatarFallback>{initials(demo.name)}</AvatarFallback>
                   </Avatar>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-foreground">
-                      {demo.name}
-                    </span>
+                    <span className="block text-sm font-semibold">{demo.name}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {demo.blurb} · {demo.email}
+                      {demo.blurb}
                     </span>
                   </span>
-                  <Badge variant={active ? "default" : "secondary"}>
+                  <Badge className={cn("border-0", ROLE_TONE[demo.role])}>
                     {demo.role}
                   </Badge>
                 </button>
@@ -117,14 +108,18 @@ export function DemoSwitcher() {
       {user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="sm" className="gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2 bg-primary/10 text-foreground hover:bg-primary/15"
+            >
               <Avatar size="sm">
                 <AvatarFallback>{initials(user.name)}</AvatarFallback>
               </Avatar>
-              <span className="hidden sm:inline">
+              <span className="hidden max-w-36 truncate sm:inline">
                 {user.name}
-                <span className="text-muted-foreground"> · {user.role}</span>
               </span>
+              <ChevronDown className="size-3.5 opacity-60" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -132,7 +127,7 @@ export function DemoSwitcher() {
               <div className="flex flex-col gap-0.5">
                 <span>{user.name}</span>
                 <span className="text-xs font-normal text-muted-foreground">
-                  {user.email}
+                  {user.role} · {user.email}
                 </span>
               </div>
             </DropdownMenuLabel>
@@ -157,9 +152,7 @@ export function DemoSwitcher() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : (
-        <Badge variant="outline">Not signed in</Badge>
-      )}
+      ) : null}
     </div>
   );
 }

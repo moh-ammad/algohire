@@ -1,16 +1,8 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
-import { BrandLogo } from "@/components/BrandLogo";
+import { CertificateArt } from "@/components/CertificateArt";
 import { WorkflowStepper } from "@/components/WorkflowStepper";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ShieldCheck, Sparkles, Upload, Users } from "lucide-react";
 
 export function HomePage() {
   const { user, hasRole } = useAuth();
@@ -27,71 +19,84 @@ export function HomePage() {
             : null;
 
   return (
-    <div className="space-y-12">
-      {/* Hero — one composition */}
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-primary/10 via-background to-accent/40 px-6 py-12 shadow-sm sm:px-10 sm:py-16">
+    <div className="space-y-16">
+      {/* Full-bleed hero composition */}
+      <section className="relative -mx-4 overflow-hidden px-4 sm:-mx-4 sm:px-4 lg:mx-0 lg:rounded-3xl lg:px-0">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-primary/15 blur-3xl"
+          className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_30%_20%,oklch(0.72_0.1_175/0.35),transparent_55%),radial-gradient(ellipse_at_90%_80%,oklch(0.7_0.06_200/0.25),transparent_50%),linear-gradient(160deg,oklch(0.28_0.06_175)_0%,oklch(0.35_0.08_185)_45%,oklch(0.42_0.07_165)_100%)]"
         />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-24 left-10 size-80 rounded-full bg-emerald-400/10 blur-3xl"
-        />
+        <div aria-hidden className="absolute inset-0 -z-10 cf-mesh opacity-20 mix-blend-overlay" />
 
-        <div className="relative max-w-2xl space-y-6 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
-          <Badge variant="secondary" className="w-fit gap-1.5">
-            <Sparkles className="size-3.5" />
-            Pragati Skills Mission
-          </Badge>
-
-          <div className="flex items-center gap-4">
-            <BrandLogo showWordmark={false} markClassName="size-14 shadow-md" />
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-6xl">
+        <div className="grid items-center gap-10 px-2 py-14 sm:px-8 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:px-12 lg:py-20">
+          <div className="space-y-7 text-primary-foreground animate-in fade-in-0 slide-in-from-bottom-3 duration-500">
+            <p className="font-heading text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
               CertiFlow
+            </p>
+            <h1 className="max-w-xl font-serif text-2xl leading-snug text-primary-foreground/95 sm:text-3xl">
+              Skills certificates that employers can trust in seconds.
             </h1>
+            <p className="max-w-lg text-base leading-relaxed text-primary-foreground/75 sm:text-lg">
+              Centres upload. Officers approve. State seals. Anyone verifies —
+              without another login wall.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                size="lg"
+                className="bg-background text-foreground hover:bg-background/90"
+                asChild
+              >
+                <Link to="/verify">Verify a certificate</Link>
+              </Button>
+              {workspace ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+                  asChild
+                >
+                  <Link to={workspace}>Open my workspace</Link>
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+                  asChild
+                >
+                  <a href="#path">See the approval path</a>
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-primary-foreground/60">
+              {user ? (
+                <>
+                  Signed in as <span className="text-primary-foreground">{user.name}</span> ·{" "}
+                  {user.role}
+                </>
+              ) : (
+                <>Use Demo users in the header — Anika → Dev → Meera → Farah.</>
+              )}
+            </p>
           </div>
 
-          <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            From training centre spreadsheet to a certificate anyone can trust —
-            with a clear approval chain and a public verify check.
-          </p>
-
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" asChild>
-              <Link to="/verify">Verify a certificate</Link>
-            </Button>
-            {workspace ? (
-              <Button size="lg" variant="outline" asChild>
-                <Link to={workspace}>Open my workspace</Link>
-              </Button>
-            ) : (
-              <Button size="lg" variant="outline" asChild>
-                <a href="#how">See how it works</a>
-              </Button>
-            )}
+          <div className="relative mx-auto w-full max-w-sm lg:mx-0 lg:justify-self-end">
+            <div
+              aria-hidden
+              className="absolute -inset-6 -z-10 rounded-full bg-emerald-300/20 blur-3xl animate-in fade-in-0 duration-1000"
+            />
+            <CertificateArt className="mx-auto rotate-1 transition-transform duration-500 hover:-rotate-1" />
           </div>
-
-          {user ? (
-            <p className="text-sm text-muted-foreground">
-              Signed in as{" "}
-              <span className="font-medium text-foreground">{user.name}</span> ·{" "}
-              {user.role}
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Use <strong>Demo users</strong> in the header — Anika → Dev → Meera →
-              Farah.
-            </p>
-          )}
         </div>
       </section>
 
-      <section id="how" className="space-y-4">
+      <section id="path" className="space-y-5">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">Approval path</h2>
-          <p className="text-sm text-muted-foreground">
-            Reviewers switch personas and walk one batch end-to-end.
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
+            Approval path
+          </h2>
+          <p className="font-serif text-muted-foreground">
+            One batch, four desks, a sealed certificate.
           </p>
         </div>
         <WorkflowStepper
@@ -109,35 +114,41 @@ export function HomePage() {
         />
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card className="border-border/80 bg-card/90 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <CardHeader>
-            <Upload className="mb-2 size-5 text-primary" />
-            <CardTitle>Centres submit</CardTitle>
-            <CardDescription>
-              Upload CSV/XLSX. Bad rows fail with exact fixes — nothing half-saved.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card className="border-border/80 bg-card/90 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <CardHeader>
-            <Users className="mb-2 size-5 text-primary" />
-            <CardTitle>Officers decide</CardTitle>
-            <CardDescription>
-              Two district votes, quality for large batches, state has the final say.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card className="border-border/80 bg-card/90 shadow-sm transition-transform duration-200 hover:-translate-y-0.5">
-          <CardHeader>
-            <ShieldCheck className="mb-2 size-5 text-primary" />
-            <CardTitle>Public verify</CardTitle>
-            <CardDescription>
-              Employers check a certificate in seconds — no login.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <section className="grid gap-8 border-t border-border/60 pt-10 sm:grid-cols-3">
+        <Feature
+          step="01"
+          title="Centres submit"
+          body="Upload CSV/XLSX. Bad rows fail with exact fixes — nothing half-saved."
+        />
+        <Feature
+          step="02"
+          title="Officers decide"
+          body="Two district votes, quality for large batches, state has the final seal."
+        />
+        <Feature
+          step="03"
+          title="Public verify"
+          body="Employers paste a cert number and know in seconds if it is genuine."
+        />
       </section>
+    </div>
+  );
+}
+
+function Feature({
+  step,
+  title,
+  body,
+}: {
+  step: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+      <p className="font-mono text-xs tracking-widest text-primary/70">{step}</p>
+      <h3 className="font-heading text-lg font-semibold">{title}</h3>
+      <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );
 }

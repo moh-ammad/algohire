@@ -17,36 +17,35 @@ export function WorkflowStepper({
   className?: string;
 }) {
   return (
-    <ol
-      className={cn(
-        "grid grid-cols-5 gap-2 rounded-2xl border border-border/80 bg-card/80 p-3 shadow-sm backdrop-blur",
-        className,
-      )}
-    >
+    <ol className={cn("relative grid grid-cols-5 gap-2", className)}>
+      <div
+        aria-hidden
+        className="absolute left-[10%] right-[10%] top-4 h-px bg-border"
+      />
       {STEPS.map((step, i) => {
         const done = i < activeIndex;
         const current = i === activeIndex;
         return (
           <li
             key={step.key}
-            className="flex flex-col items-center gap-2 text-center"
+            className="relative z-10 flex flex-col items-center gap-2.5 text-center"
           >
             <span
               className={cn(
-                "flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-colors",
+                "flex size-8 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300",
                 done && "border-primary bg-primary text-primary-foreground",
                 current &&
-                  "border-primary bg-accent text-accent-foreground ring-4 ring-primary/15",
+                  "border-primary bg-background text-primary ring-4 ring-primary/20 scale-110",
                 !done &&
                   !current &&
-                  "border-border bg-muted text-muted-foreground",
+                  "border-border bg-background text-muted-foreground",
               )}
             >
               {done ? <Check className="size-3.5" /> : i + 1}
             </span>
             <span
               className={cn(
-                "text-[11px] font-medium sm:text-xs",
+                "font-heading text-[11px] font-medium sm:text-xs",
                 current ? "text-foreground" : "text-muted-foreground",
               )}
             >

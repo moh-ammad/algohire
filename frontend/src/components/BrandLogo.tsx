@@ -6,36 +6,46 @@ type BrandLogoProps = {
   showWordmark?: boolean;
 };
 
-/** Lightweight inline SVG mark — no heavy image asset. */
+/** Lightweight inline SVG mark — seal + check. */
 export function BrandLogo({
   className,
   markClassName,
   showWordmark = true,
 }: BrandLogoProps) {
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
       <svg
-        viewBox="0 0 32 32"
+        viewBox="0 0 36 36"
         aria-hidden
-        className={cn("size-8 shrink-0", markClassName)}
+        className={cn("size-8 shrink-0 drop-shadow-sm", markClassName)}
       >
-        <rect width="32" height="32" rx="8" className="fill-primary" />
-        <path
-          d="M8 16.5c0-4 2.8-7 7-7s7 3 7 7c0 2.2-1 4.1-2.6 5.4L16 24l-3.4-2.1C10.9 20.6 8 18.7 8 16.5Z"
-          className="fill-primary-foreground/95"
+        <defs>
+          <linearGradient id="cf-mark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="oklch(0.42 0.1 175)" />
+            <stop offset="100%" stopColor="oklch(0.32 0.08 200)" />
+          </linearGradient>
+        </defs>
+        <rect width="36" height="36" rx="10" fill="url(#cf-mark)" />
+        <circle
+          cx="18"
+          cy="17"
+          r="8.5"
+          fill="none"
+          stroke="oklch(0.98 0.01 165)"
+          strokeWidth="1.6"
+          opacity="0.9"
         />
         <path
-          d="M12.2 16.2 14.6 18.5 19.8 13.4"
+          d="M13.2 17.2 16.4 20.2 23 13.8"
           fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+          stroke="oklch(0.98 0.01 165)"
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-primary"
         />
       </svg>
       {showWordmark ? (
-        <span className="text-lg font-semibold tracking-tight text-foreground">
+        <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
           CertiFlow
         </span>
       ) : (
