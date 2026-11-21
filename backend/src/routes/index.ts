@@ -2,9 +2,11 @@ import { Router } from "express";
 import { authRouter } from "./auth.js";
 import { batchesRouter } from "./batches.js";
 import { healthRouter } from "./health.js";
+import { inboxRouter } from "./inbox.js";
 
 export const routes = Router();
 
 routes.use(healthRouter);
 routes.use("/api/auth", authRouter);
 routes.use("/api/batches", batchesRouter);
+routes.use("/api/inbox", inboxRouter);
