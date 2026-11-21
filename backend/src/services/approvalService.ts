@@ -6,6 +6,7 @@ import {
 } from "../../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import { emitDomainEvent } from "../lib/events.js";
+import { broadcastBatchEvent } from "../lib/realtime.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { AuthUser } from "../types/auth.js";
 import { QUALITY_THRESHOLD } from "./batchService.js";
@@ -318,6 +319,16 @@ export async function decideBatch(
     to: result.to,
     decision,
     actorId: user.id,
+  });
+
+  broadcastBatchEvent("batch.status_changed", {
+    batchId: result.batch.id,
+    reference: result.batch.reference,
+    from: result.from,
+    to: result.to,
+    decision,
+    actorId: user.id,
+    status: result.to,
   });
 
   if (

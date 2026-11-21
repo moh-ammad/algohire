@@ -14,4 +14,7 @@ export const env = {
   databaseUrl: required("DATABASE_URL"),
   redisUrl: required("REDIS_URL"),
   jwtSecret: process.env.JWT_SECRET ?? "dev-secret-change-me",
+  /** Batches idle in a review stage longer than this are "stuck" for State. */
+  stuckIdleMinutes: Number(process.env.STUCK_IDLE_MINUTES) || 1440,
+  corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
 } as const;

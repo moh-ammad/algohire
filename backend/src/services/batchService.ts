@@ -1,5 +1,6 @@
 import { BatchStatus, type Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
+import { broadcastBatchEvent } from "../lib/realtime.js";
 import type { AuthUser } from "../types/auth.js";
 import { AppError } from "../middleware/errorHandler.js";
 import {
@@ -198,13 +199,13 @@ export async function submitBatch(user: AuthUser, batchId: string) {
     );
   }
 
-  return prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx) => {
     // Clear prior approvals when resubmitting after SEND_BACK (PLAN decision)
     if (batch.status === BatchStatus.SENT_BACK) {
       await tx.approval.deleteMany({ where: { batchId: batch.id } });
     }
 
-    const updated = await tx.batch.update({
+    const next = await tx.batch.update({
       where: { id: batch.id },
       data: {
         status: BatchStatus.DISTRICT_REVIEW,
@@ -223,12 +224,23 @@ export async function submitBatch(user: AuthUser, batchId: string) {
       action: "BATCH_SUBMITTED",
       entityId: batch.id,
       meta: {
-        candidateCount: updated.candidateCount,
-        requiresQuality: updated.requiresQuality,
+        candidateCount: next.candidateCount,
+        requiresQuality: next.requiresQuality,
         fromStatus: batch.status,
       },
     });
 
-    return updated;
+    return next;
   });
+
+  broadcastBatchEvent("batch.status_changed", {
+    batchId: updated.id,
+    reference: updated.reference,
+    from: batch.status,
+    to: updated.status,
+    status: updated.status,
+    actorId: user.id,
+  });
+
+  return updated;
 }
