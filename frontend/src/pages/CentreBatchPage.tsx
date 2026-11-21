@@ -11,6 +11,7 @@ import {
 } from "@/api/batches";
 import { ApiError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
+import { AuditTimeline } from "@/components/AuditTimeline";
 import { CertificateDeliveryPanel } from "@/components/CertificateDeliveryPanel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -371,6 +372,8 @@ export function CentreBatchPage() {
           )}
         </CardContent>
       </Card>
+
+      {token ? <AuditTimeline token={token} batchId={batch.id} /> : null}
     </div>
   );
 }

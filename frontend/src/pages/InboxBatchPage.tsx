@@ -10,8 +10,10 @@ import {
   type InboxBatch,
 } from "@/api/inbox";
 import { useAuth } from "@/auth/AuthContext";
+import { AuditTimeline } from "@/components/AuditTimeline";
 import { CertificateDeliveryPanel } from "@/components/CertificateDeliveryPanel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useRealtime } from "@/hooks/useRealtime";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +79,14 @@ export function InboxBatchPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useRealtime(
+    ["batch.status_changed"],
+    (payload) => {
+      if (payload.batchId === id) void load();
+    },
+    { batchId: id, enabled: !!token && !!id },
+  );
 
   async function decide(decision: Decision) {
     if (!token || !id) return;
@@ -346,6 +356,8 @@ export function InboxBatchPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {token ? <AuditTimeline token={token} batchId={batch.id} /> : null}
     </div>
   );
 }

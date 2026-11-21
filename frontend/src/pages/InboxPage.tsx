@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useRealtime } from "@/hooks/useRealtime";
 import { Inbox, RefreshCw } from "lucide-react";
 
 const TITLES: Record<string, { title: string; blurb: string }> = {
@@ -54,6 +55,14 @@ export function InboxPage({ role }: { role: Role }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useRealtime(
+    ["batch.status_changed", "batch.stuck"],
+    () => {
+      void load();
+    },
+    { enabled: !!token },
+  );
 
   return (
     <div className="space-y-8">
