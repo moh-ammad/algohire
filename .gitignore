@@ -7,10 +7,21 @@ dist-ssr/
 build/
 *.tsbuildinfo
 
-# Environment & secrets
+# Prisma generated client
+generated/
+**/generated/
+
+# Environment & secrets — commit *.example only (never real .env)
 .env
 .env.*
 !.env.example
+!**/.env.example
+
+# Local working notes (keep on disk, don’t push)
+GIT.md
+PLAN.md
+PROGRESS.md
+TASK.md
 
 # Logs
 logs/
@@ -38,11 +49,15 @@ coverage/
 Thumbs.db
 Desktop.ini
 
-# Editors
+# Editors / AI tooling
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
 *.suo
 *.ntvs*
 *.njsproj

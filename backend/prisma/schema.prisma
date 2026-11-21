@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CENTRE
+  DISTRICT
+  QUALITY
+  STATE
+}
+
+enum BatchStatus {
+  DRAFT
+  SUBMITTED
+  DISTRICT_REVIEW
+  QUALITY_REVIEW
+  STATE_REVIEW
+  APPROVED
+  REJECTED
+  SENT_BACK
+}
+
+enum CertificateStatus {
+  PENDING
+  ISSUED
+  DELIVERED
+  CANCELLED
+}
+
+enum ApprovalDecision {
+  APPROVE
+  REJECT
+  SEND_BACK
+}
+
+model District {
+  id        String           @id @default(cuid())
+  code      String           @unique
+  name      String
+  centres   TrainingCentre[]
+  users     User[]
+  createdAt DateTime         @default(now())
+}
+
+model TrainingCentre {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  name       String
+  districtId String
+  district   District @relation(fields: [districtId], references: [id])
+  users      User[]
+  batches    Batch[]
+  createdAt  DateTime @default(now())
+
+  @@index([districtId])
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String
+  name         String
+  role         Role
+  centreId     String?
+  centre       TrainingCentre? @relation(fields: [centreId], references: [id])
+  districtId   String?
+  district     District?       @relation(fields: [districtId], references: [id])
+  approvals    Approval[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([role])
+  @@index([centreId])
+  @@index([districtId])
+}
+
+model Batch {
+  id              String        @id @default(cuid())
+  reference       String        @unique
+  centreId        String
+  centre          TrainingCentre @relation(fields: [centreId], references: [id])
+  status          BatchStatus   @default(DRAFT)
+  candidateCount  Int           @default(0)
+  requiresQuality Boolean       @default(false)
+  returnReason    String?
+  candidates      Candidate[]
+  approvals       Approval[]
+  certificates    Certificate[]
+  auditLogs       AuditLog[]
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([centreId])
+}
+
+model Candidate {
+  id          String       @id @default(cuid())
+  batchId     String
+  batch       Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  fullName    String
+  phone       String
+  nationalId  String?
+  courseName  String
+  rowNumber   Int
+  certificate Certificate?
+  createdAt   DateTime     @default(now())
+
+  @@unique([batchId, rowNumber])
+  @@index([batchId])
+}
+
+model Approval {
+  id        String           @id @default(cuid())
+  batchId   String
+  batch     Batch            @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  decision  ApprovalDecision
+  stage     BatchStatus
+  reason    String?
+  createdAt DateTime         @default(now())
+
+  /// One decision per officer per batch stage (supports concurrent quorum safely).
+  @@unique([batchId, userId, stage])
+  @@index([batchId])
+  @@index([userId])
+}
+
+model Certificate {
+  id           String            @id @default(cuid())
+  certNumber   String            @unique
+  candidateId  String            @unique
+  candidate    Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  batchId      String
+  batch        Batch             @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  status       CertificateStatus @default(PENDING)
+  issuedAt     DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([batchId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  batchId    String?
+  batch      Batch?   @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([batchId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
