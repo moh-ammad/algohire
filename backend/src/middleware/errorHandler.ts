@@ -1,13 +1,17 @@
 import type { NextFunction, Request, Response } from "express";
 
 export class AppError extends Error {
+  details?: unknown;
+
   constructor(
     public statusCode: number,
     message: string,
     public code = "APP_ERROR",
+    details?: unknown,
   ) {
     super(message);
     this.name = "AppError";
+    this.details = details;
   }
 }
 
@@ -31,6 +35,7 @@ export function errorHandler(
       error: err.message,
       code: err.code,
       requestId,
+      ...(err.details !== undefined ? { details: err.details } : {}),
     });
     return;
   }
