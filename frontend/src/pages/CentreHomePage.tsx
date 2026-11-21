@@ -8,6 +8,7 @@ import {
 } from "@/api/batches";
 import { ApiError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
+import { WorkflowStepper } from "@/components/WorkflowStepper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -84,6 +86,12 @@ export function CentreHomePage() {
     }
   }
 
+  const drafts = batches.filter((b) => b.status === "DRAFT" || b.status === "SENT_BACK").length;
+  const inReview = batches.filter((b) =>
+    ["DISTRICT_REVIEW", "QUALITY_REVIEW", "STATE_REVIEW"].includes(b.status),
+  ).length;
+  const approved = batches.filter((b) => b.status === "APPROVED").length;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -106,19 +114,43 @@ export function CentreHomePage() {
         </div>
       </div>
 
-      <Alert>
+      <WorkflowStepper activeIndex={0} />
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardDescription>Editable</CardDescription>
+            <CardTitle className="text-3xl">{loading ? "—" : drafts}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardDescription>In review</CardDescription>
+            <CardTitle className="text-3xl">{loading ? "—" : inReview}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardDescription>Approved</CardDescription>
+            <CardTitle className="text-3xl">{loading ? "—" : approved}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <Alert className="border-primary/20 bg-accent/30">
         <FileSpreadsheet className="size-4" />
         <AlertTitle>Spreadsheet format</AlertTitle>
         <AlertDescription>
-          CSV or Excel with columns <code className="text-xs">fullName</code>,{" "}
+          CSV or Excel: <code className="text-xs">fullName</code>,{" "}
           <code className="text-xs">phone</code>,{" "}
           <code className="text-xs">courseName</code>, optional{" "}
           <code className="text-xs">nationalId</code>. Bad rows block the whole
-          upload — nothing half-saved.
+          upload — use <strong>Explain with Gemini</strong> on the batch page for
+          fix tips.
         </AlertDescription>
       </Alert>
 
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Your batches</CardTitle>
           <CardDescription>
@@ -126,10 +158,22 @@ export function CentreHomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {batches.length === 0 && !loading ? (
-            <p className="text-sm text-muted-foreground">
-              No batches yet. Create a draft, then upload candidates.
-            </p>
+          {loading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-2/3" />
+            </div>
+          ) : batches.length === 0 ? (
+            <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10">
+              <p className="text-sm text-muted-foreground">
+                No batches yet. Create a draft, upload candidates, then submit.
+              </p>
+              <Button onClick={() => void onCreate()} disabled={creating}>
+                <Plus className="size-3.5" />
+                Create first batch
+              </Button>
+            </div>
           ) : (
             <Table>
               <TableHeader>

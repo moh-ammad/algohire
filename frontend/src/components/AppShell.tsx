@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import type { Role } from "@/auth/types";
 import { ApiStatus } from "@/components/ApiStatus";
@@ -12,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
 
 function RoleNav({
   roles,
@@ -35,7 +34,10 @@ function RoleNav({
           to={to}
           className={({ isActive }) =>
             cn(
-              buttonVariants({ variant: isActive ? "secondary" : "ghost", size: "sm" }),
+              buttonVariants({
+                variant: isActive ? "secondary" : "ghost",
+                size: "sm",
+              }),
             )
           }
         >
@@ -49,12 +51,20 @@ function RoleNav({
 
 export function AppShell() {
   return (
-    <div className="min-h-svh bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3">
+    <div className="relative min-h-svh overflow-x-hidden bg-background text-foreground">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_oklch(0.92_0.03_170)_0%,_transparent_55%)]"
+      />
+
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/75 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <Link to="/" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <Link
+                to="/"
+                className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <BrandLogo />
               </Link>
               <Separator orientation="vertical" className="hidden h-6 sm:block" />
@@ -89,7 +99,7 @@ export function AppShell() {
                       Verify
                     </NavLink>
                   </TooltipTrigger>
-                  <TooltipContent>Public — no login required</TooltipContent>
+                  <TooltipContent>Public — no login</TooltipContent>
                 </Tooltip>
                 <RoleNav
                   roles={["CENTRE"]}
@@ -113,7 +123,7 @@ export function AppShell() {
                   roles={["STATE"]}
                   to="/state"
                   label="State"
-                  hint="Final say + cancellations"
+                  hint="Final say"
                 />
               </nav>
             </div>
@@ -123,7 +133,7 @@ export function AppShell() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
         <Outlet />
       </main>
     </div>

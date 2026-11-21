@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { explainErrors } from "@/api/ai";
 import {
   getBatch,
   submitBatch,
@@ -34,6 +35,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Loader2,
+  Sparkles,
   Upload,
 } from "lucide-react";
 
@@ -52,6 +54,8 @@ export function CentreBatchPage() {
   const [submitting, setSubmitting] = useState(false);
   const [rowErrors, setRowErrors] = useState<SpreadsheetError[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [aiHelp, setAiHelp] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
@@ -75,6 +79,7 @@ export function CentreBatchPage() {
     if (!file || !token || !id) return;
     setUploading(true);
     setRowErrors([]);
+    setAiHelp(null);
     try {
       const res = await uploadCandidates(token, id, file);
       setBatch(res.batch);
@@ -248,29 +253,72 @@ export function CentreBatchPage() {
             </div>
 
             {rowErrors.length > 0 ? (
-              <Alert variant="destructive">
-                <AlertTitle>Fix these rows — nothing was saved</AlertTitle>
-                <AlertDescription>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Row</TableHead>
-                        <TableHead>Field</TableHead>
-                        <TableHead>Issue</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {rowErrors.map((e, i) => (
-                        <TableRow key={`${e.row}-${e.field}-${i}`}>
-                          <TableCell>{e.row || "—"}</TableCell>
-                          <TableCell>{e.field ?? "—"}</TableCell>
-                          <TableCell>{e.message}</TableCell>
+              <div className="space-y-3">
+                <Alert variant="destructive">
+                  <AlertTitle>Fix these rows — nothing was saved</AlertTitle>
+                  <AlertDescription>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Row</TableHead>
+                          <TableHead>Field</TableHead>
+                          <TableHead>Issue</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </AlertDescription>
-              </Alert>
+                      </TableHeader>
+                      <TableBody>
+                        {rowErrors.map((e, i) => (
+                          <TableRow key={`${e.row}-${e.field}-${i}`}>
+                            <TableCell>{e.row || "—"}</TableCell>
+                            <TableCell>{e.field ?? "—"}</TableCell>
+                            <TableCell>{e.message}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </AlertDescription>
+                </Alert>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiLoading || !token}
+                  onClick={() => {
+                    if (!token) return;
+                    setAiLoading(true);
+                    void explainErrors(token, rowErrors)
+                      .then((res) => {
+                        setAiHelp(res.text);
+                        toast.success("Gemini tips ready");
+                      })
+                      .catch((err) => {
+                        const msg =
+                          err instanceof ApiError
+                            ? ((err.body as { error?: string })?.error ??
+                              err.message)
+                            : "AI help unavailable";
+                        toast.error(msg);
+                      })
+                      .finally(() => setAiLoading(false));
+                  }}
+                >
+                  {aiLoading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-3.5" />
+                  )}
+                  Explain with Gemini
+                </Button>
+                {aiHelp ? (
+                  <Card className="border-primary/20 bg-accent/40">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Fix checklist</CardTitle>
+                    </CardHeader>
+                    <CardContent className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                      {aiHelp}
+                    </CardContent>
+                  </Card>
+                ) : null}
+              </div>
             ) : null}
           </CardContent>
         </Card>

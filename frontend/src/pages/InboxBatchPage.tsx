@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { batchBrief } from "@/api/ai";
 import { ApiError } from "@/api/client";
 import {
   decideInbox,
@@ -20,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -29,7 +31,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Check, Loader2, RotateCcw, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Loader2,
+  RotateCcw,
+  Sparkles,
+  X,
+} from "lucide-react";
 
 function homeForRole(role: string | undefined) {
   if (role === "DISTRICT") return "/officer";
@@ -47,6 +56,8 @@ export function InboxBatchPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [reason, setReason] = useState("");
+  const [brief, setBrief] = useState<string | null>(null);
+  const [briefLoading, setBriefLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
@@ -143,7 +154,65 @@ export function InboxBatchPage() {
         <p className="text-sm text-muted-foreground">
           {batch.centre?.name} · {batch.candidateCount} candidates
         </p>
+        <div className="max-w-sm space-y-2 pt-1">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Quorum progress</span>
+            <span>
+              {batch.quorum.approveCount}/{batch.quorum.required}
+            </span>
+          </div>
+          <Progress
+            value={
+              (batch.quorum.approveCount / Math.max(batch.quorum.required, 1)) *
+              100
+            }
+          />
+        </div>
       </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={briefLoading || !token}
+          onClick={() => {
+            if (!token) return;
+            setBriefLoading(true);
+            void batchBrief(token, batch.id)
+              .then((res) => {
+                setBrief(res.text);
+                toast.success("Gemini brief ready");
+              })
+              .catch((err) => {
+                const msg =
+                  err instanceof ApiError
+                    ? ((err.body as { error?: string })?.error ?? err.message)
+                    : "AI brief unavailable";
+                toast.error(msg);
+              })
+              .finally(() => setBriefLoading(false));
+          }}
+        >
+          {briefLoading ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="size-3.5" />
+          )}
+          Gemini review brief
+        </Button>
+      </div>
+
+      {brief ? (
+        <Card className="border-primary/20 bg-accent/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Officer brief</CardTitle>
+            <CardDescription>AI assist — you still decide.</CardDescription>
+          </CardHeader>
+          <CardContent className="whitespace-pre-wrap text-sm leading-relaxed">
+            {brief}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {user?.role === "DISTRICT" ? (
         <Alert>
