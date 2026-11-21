@@ -1,19 +1,40 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public body?: unknown,
-  ) {
+  status: number;
+  body?: unknown;
+
+  constructor(message: string, status: number, body?: unknown) {
     super(message);
     this.name = "ApiError";
+    this.status = status;
+    this.body = body;
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+type RequestOptions = {
+  method?: string;
+  body?: unknown;
+  token?: string | null;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { Accept: "application/json" },
+    method: options.method ?? "GET",
+    headers,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
   let body: unknown = null;
@@ -28,6 +49,14 @@ export async function apiGet<T>(path: string): Promise<T> {
   }
 
   return body as T;
+}
+
+export function apiGet<T>(path: string, token?: string | null) {
+  return request<T>(path, { token });
+}
+
+export function apiPost<T>(path: string, body: unknown, token?: string | null) {
+  return request<T>(path, { method: "POST", body, token });
 }
 
 export { API_URL };
