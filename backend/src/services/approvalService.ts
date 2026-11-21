@@ -9,6 +9,10 @@ import { emitDomainEvent } from "../lib/events.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { AuthUser } from "../types/auth.js";
 import { QUALITY_THRESHOLD } from "./batchService.js";
+import {
+  enqueueDeliveriesForBatch,
+  issueCertificatesForBatch,
+} from "./certificateService.js";
 
 /** Brief: district decision needs more than one officer. */
 export const DISTRICT_QUORUM = 2;
@@ -258,6 +262,8 @@ export async function decideBatch(
           if (moved.count === 1) {
             nextStatus = BatchStatus.APPROVED;
             advanced = true;
+            // Moment 3: exactly one certificate per candidate
+            await issueCertificatesForBatch(tx, batch.id);
           }
         }
       }
@@ -313,6 +319,21 @@ export async function decideBatch(
     decision,
     actorId: user.id,
   });
+
+  if (
+    decision === ApprovalDecision.APPROVE &&
+    result.to === BatchStatus.APPROVED
+  ) {
+    try {
+      const enqueued = await enqueueDeliveriesForBatch(result.batch.id);
+      await emitDomainEvent("certificates.delivery_enqueued", {
+        batchId: result.batch.id,
+        count: enqueued,
+      });
+    } catch (err) {
+      console.error("enqueue deliveries failed", err);
+    }
+  }
 
   const stageApprovals = result.batch.approvals.filter(
     (a) => a.stage === result.from || a.stage === result.batch.status,

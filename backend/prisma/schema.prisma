@@ -136,21 +136,26 @@ model Approval {
 }
 
 model Certificate {
-  id           String            @id @default(cuid())
-  certNumber   String            @unique
-  candidateId  String            @unique
-  candidate    Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  batchId      String
-  batch        Batch             @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  status       CertificateStatus @default(PENDING)
-  issuedAt     DateTime?
-  cancelledAt  DateTime?
-  cancelReason String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id            String            @id @default(cuid())
+  certNumber    String            @unique
+  candidateId   String            @unique
+  candidate     Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  batchId       String
+  batch         Batch             @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  status        CertificateStatus @default(PENDING)
+  issuedAt      DateTime?
+  cancelledAt   DateTime?
+  cancelReason  String?
+  waAttempts    Int               @default(0)
+  waLastError   String?
+  waDeliveredAt DateTime?
+  pdfReadyAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@index([batchId])
   @@index([status])
+  @@index([certNumber])
 }
 
 model AuditLog {
