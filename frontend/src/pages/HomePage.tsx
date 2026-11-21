@@ -51,6 +51,12 @@ export function HomePage() {
             Pick a demo persona from the header to unlock role workspaces.
           </p>
         )}
+        <ol className="max-w-xl list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <li>Anika → Centre → new batch → upload CSV → submit</li>
+          <li>Dev → Inbox → Approve (1/2)</li>
+          <li>Meera → Inbox → Approve → goes to State</li>
+          <li>Farah → State → Approve → APPROVED</li>
+        </ol>
       </section>
 
       <section id="demo" className="grid gap-4 sm:grid-cols-3">

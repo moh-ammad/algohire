@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CentreBatchPage } from "@/pages/CentreBatchPage";
 import { CentreHomePage } from "@/pages/CentreHomePage";
 import { HomePage } from "@/pages/HomePage";
+import { InboxBatchPage } from "@/pages/InboxBatchPage";
 import { OfficerHomePage } from "@/pages/OfficerHomePage";
 import { QualityHomePage } from "@/pages/QualityHomePage";
 import { StateHomePage } from "@/pages/StateHomePage";
@@ -53,15 +54,23 @@ export default function App() {
                   </RequireRole>
                 }
               />
-              <Route
-                path="state"
-                element={
-                  <RequireRole roles={["STATE"]}>
-                    <StateHomePage />
-                  </RequireRole>
-                }
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
+            <Route
+              path="state"
+              element={
+                <RequireRole roles={["STATE"]}>
+                  <StateHomePage />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="inbox/:id"
+              element={
+                <RequireRole roles={["DISTRICT", "QUALITY", "STATE"]}>
+                  <InboxBatchPage />
+                </RequireRole>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
         </BrowserRouter>
