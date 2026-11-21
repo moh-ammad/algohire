@@ -10,6 +10,7 @@ import {
   type InboxBatch,
 } from "@/api/inbox";
 import { useAuth } from "@/auth/AuthContext";
+import { CertificateDeliveryPanel } from "@/components/CertificateDeliveryPanel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -279,6 +280,14 @@ export function InboxBatchPage() {
           </AlertDescription>
         </Alert>
       )}
+
+      {token ? (
+        <CertificateDeliveryPanel
+          token={token}
+          batchId={batch.id}
+          enabled={batch.status === "APPROVED" || user?.role === "STATE"}
+        />
+      ) : null}
 
       <Card>
         <CardHeader>
